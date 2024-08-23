@@ -1,5 +1,4 @@
 
-
 <script>
 
   import { onMount }    from 'svelte';
@@ -81,7 +80,7 @@
 </script>
 
 
-<div class="p-6 bg-gray-50 rounded-lg shadow-md">
+<section class="p-6 bg-gray-50 rounded-lg shadow-md">
   <!-- Form Section -->
   <form class="space-y-4" on:submit|preventDefault={saveData}>
     <div class="flex flex-col">
@@ -137,4 +136,9 @@
     {/each}
   </ul> -->
 
-</div>
+</section>
+
+
+<style>
+
+</style>

@@ -1,9 +1,24 @@
+
 <script>
-  import "../app.css";
+	import '../app.css';
 </script>
 
-<slot />
+<svelte:head>
+	<title>LocalStorage Memory</title>
+	<meta name="description" content="LocalStorage Memory demo app" />
+</svelte:head>
 
-<footer>
-  This is layout
-</footer>
+<div class="app">
+
+	<main>
+		<slot />
+	</main>
+
+	<footer>
+		This is the layout
+	</footer>
+</div>
+
+<style>
+
+</style>
