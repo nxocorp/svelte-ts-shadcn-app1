@@ -2,7 +2,7 @@
 <script>
 
   import { onMount }    from 'svelte';
-  
+
   import { Button }     from "$lib/components/ui/button";
   import { Textarea }   from "$lib/components/ui/textarea";
   import { Input }      from "$lib/components/ui/input";
@@ -126,16 +126,6 @@
       </li>
     {/each}
   </ul>
-
-  <!-- Retrieved Data Section (for display, not editing directly here) -->
-  <!-- <h2 class="text-lg font-semibold mt-6">Retrieved Data</h2>
-  <ul class="mt-2 space-y-2">
-    {#each noteArray as note}
-      <li class="flex items-center justify-between">
-        <span>({note.id}): {note.blob}</span>
-      </li>
-    {/each}
-  </ul> -->
 
 </section>
 
