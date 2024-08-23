@@ -1,0 +1,179 @@
+
+
+<script>
+
+  import { onMount } from 'svelte';
+
+  import { Button } from "$lib/components/ui/button";
+  import { Textarea } from "$lib/components/ui/textarea";
+  import { Input } from "$lib/components/ui/input";
+
+  let key = '';
+  let value = '';
+  let noteArray = [];
+  let localStorageKeys = [];
+  let isUpdateMode = false; // Track whether we're in "Update" mode
+
+  // Load all keys from LocalStorage
+  function loadLocalStorageKeys() {
+    localStorageKeys = Object.keys(localStorage);
+  }
+
+  // Save data to LocalStorage in note_array format
+  function saveData() {
+
+    // Split the textarea input into lines, filtering out any empty lines
+    const lines = value.split('\n').filter(line => line.trim() !== '');
+
+    // Ensure lines are greater than 0 before mapping
+    if (lines.length > 0) {
+      const noteArray = lines.map((line, index) => {
+        return{
+          id: String(index+1).padStart(4, '0'), 
+          blob: line.trim()
+        }
+      });
+
+      const jsonValue = {
+        note_array: noteArray
+      };
+
+      localStorage.setItem(key, JSON.stringify(jsonValue));
+      key = '';
+      value = '';
+
+      loadLocalStorageKeys(); // Update the list of keys
+    } else {
+      alert('Please enter at least one line of text.');
+    }
+  }
+
+  // Remove the key from localStorage
+ function deleteKey(key) {
+    localStorage.removeItem(key);
+    localStorageKeys = localStorageKeys.filter(storageKey => storageKey !== key);
+  }
+
+  // Retrieve data from LocalStorage based on the selected key
+  function retrieveData(selectedKey) {
+    const storedValue = localStorage.getItem(selectedKey);
+    if (storedValue) {
+      try {
+        const parsedValue = JSON.parse(storedValue);
+
+        if (parsedValue.note_array && Array.isArray(parsedValue.note_array)) {
+          noteArray = parsedValue.note_array;
+        } else {
+          noteArray = [];
+          alert('Stored JSON structure is invalid.');
+        }
+      } catch (error) {
+        noteArray = [];
+        alert('Error parsing stored JSON.');
+      }
+    } else {
+      noteArray = [];
+      alert('No value found for the selected key.');
+    }
+  }
+
+  function saveUpdate(id, updatedBlob) {
+    const noteIndex = noteArray.findIndex(note => note.id === id);
+    if (noteIndex !== -1) {
+      noteArray[noteIndex].blob = updatedBlob;
+
+      try {
+        const key = localStorageKeys.find(k => 
+          localStorage.getItem(k).includes(noteArray[noteIndex].id)
+        );
+        if (key) {
+          const serializedData = JSON.stringify(noteArray);
+          localStorage.setItem(key, serializedData);
+        }
+      } catch (error) {
+        console.error("Error updating and saving to localStorage:", error);
+      }
+    }
+  }
+  
+  // Initialize the list of keys on component mount
+  onMount(() => {
+    loadLocalStorageKeys();
+  })
+
+</script>
+
+
+<div class="p-6 bg-gray-50 rounded-lg shadow-md">
+  <form class="space-y-4" on:submit|preventDefault={saveData}>
+    <div class="flex flex-col">
+      <!-- <label for="key" class="text-sm font-medium text-gray-700">Key</label> -->
+      <Input
+        type="text"
+        id="key"
+        bind:value={key}
+        placeholder="Key"
+        required
+        class="input input-bordered w-full mt-1"
+      />
+    </div>
+
+    <div class="flex flex-col">
+      <!-- <label for="value" class="text-sm font-medium text-gray-700">
+        Enter list of items, one per line
+      </label> -->
+      <Textarea
+        id="value"
+        bind:value={value}
+        placeholder="Enter list of items, one per line"
+        required
+        class="textarea textarea-bordered w-full mt-1"
+      ></Textarea>
+    </div>
+
+    <Button class="btn btn-primary w-full" type="submit">Save</Button>
+  </form>
+
+  <h2 class="text-lg font-semibold mt-6">Available Keys</h2>
+  <ul class="list-disc list-inside mt-2 space-y-2">
+    {#each localStorageKeys as storageKey}
+      <li>
+        <a href="##" class="text-blue-500 hover:underline"
+          on:click = {() => {
+            event.preventDefault();
+            retrieveData(storageKey);
+          }} >
+          {storageKey} </a>
+        <Button class="btn btn-danger ml-4"
+          on:click={() => {
+            event.preventDefault();
+            deleteKey(storageKey);
+            }} >
+          Delete </Button>
+      </li>
+    {/each}
+  </ul>
+
+  <!-- <h2 class="text-lg font-semibold mt-6">Retrieved Data</h2>
+  <ul class="list-disc list-inside mt-2 space-y-2">
+    {#each noteArray as note}
+      <li class="text-gray-700">
+        <span class="font-semibold">({note.id}):</span> {note.blob}
+      </li>
+    {/each}
+  </ul> -->
+
+  <h2 class="text-lg font-semibold mt-6">Retrieved Data</h2>
+  <ul class="mt-2 space-y-2">
+    {#each noteArray as note, index}
+      <li class="flex items-center justify-between">
+        <Input type="text" class="input input-bordered w-full mr-4"
+          bind:value={noteArray[index].blob} />
+        <Button class="btn btn-primary"
+          on:click={() => saveUpdate(note.id, noteArray[index].blob)} >
+          Save </Button>
+      </li>
+    {/each}
+  </ul>
+
+</div>
